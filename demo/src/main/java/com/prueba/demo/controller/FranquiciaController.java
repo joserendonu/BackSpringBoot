@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/franquicias")
 public class FranquiciaController {
@@ -70,6 +69,41 @@ public class FranquiciaController {
 
                         s.getProductos().add(nuevoProducto);
                         return f;
+                    }
+                }
+
+                throw new RuntimeException("Sucursal no encontrada");
+            }
+        }
+
+        throw new RuntimeException("Franquicia no encontrada");
+    }
+
+    @DeleteMapping("/{nombreFranquicia}/sucursales/{nombreSucursal}/productos/{nombreProducto}")
+    public Franquicia eliminarProducto(
+            @PathVariable String nombreFranquicia,
+            @PathVariable String nombreSucursal,
+            @PathVariable String nombreProducto) {
+
+        for (Franquicia f : franquicias) {
+            if (f.getNombre().equalsIgnoreCase(nombreFranquicia)) {
+
+                for (Sucursal s : f.getSucursales()) {
+                    if (s.getNombre().equalsIgnoreCase(nombreSucursal)) {
+
+                        if (s.getProductos() == null || s.getProductos().isEmpty()) {
+                            throw new RuntimeException("No hay productos en la sucursal");
+                        }
+
+                        // Eliminar producto por nombre
+                        boolean eliminado = s.getProductos()
+                                .removeIf(p -> p.getNombre().equalsIgnoreCase(nombreProducto));
+
+                        if (eliminado) {
+                            return f;
+                        } else {
+                            throw new RuntimeException("Producto no encontrado");
+                        }
                     }
                 }
 
