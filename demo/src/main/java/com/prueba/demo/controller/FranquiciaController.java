@@ -3,6 +3,7 @@ package com.prueba.demo.controller;
 import com.prueba.demo.Franquicia;
 import com.prueba.demo.Producto;
 import com.prueba.demo.Sucursal;
+import com.prueba.demo.dto.ProductoStockDTO;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -108,6 +109,75 @@ public class FranquiciaController {
                 }
 
                 throw new RuntimeException("Sucursal no encontrada");
+            }
+        }
+
+        throw new RuntimeException("Franquicia no encontrada");
+    }
+
+    @PutMapping("/{nombreFranquicia}/sucursales/{nombreSucursal}/productos/{nombreProducto}")
+    public Franquicia actualizarStock(
+            @PathVariable String nombreFranquicia,
+            @PathVariable String nombreSucursal,
+            @PathVariable String nombreProducto,
+            @RequestBody Producto productoActualizado) {
+
+        for (Franquicia f : franquicias) {
+            if (f.getNombre().equalsIgnoreCase(nombreFranquicia)) {
+
+                for (Sucursal s : f.getSucursales()) {
+                    if (s.getNombre().equalsIgnoreCase(nombreSucursal)) {
+
+                        for (Producto p : s.getProductos()) {
+                            if (p.getNombre().equalsIgnoreCase(nombreProducto)) {
+
+                                // 🔥 actualizar stock
+                                p.setStock(productoActualizado.getStock());
+
+                                return f;
+                            }
+                        }
+
+                        throw new RuntimeException("Producto no encontrado");
+                    }
+                }
+
+                throw new RuntimeException("Sucursal no encontrada");
+            }
+        }
+
+        throw new RuntimeException("Franquicia no encontrada");
+    }
+
+    @GetMapping("/{nombreFranquicia}/productos-mayor-stock")
+    public List<ProductoStockDTO> obtenerProductosMayorStock(@PathVariable String nombreFranquicia) {
+
+        List<ProductoStockDTO> resultado = new ArrayList<>();
+
+        for (Franquicia f : franquicias) {
+            if (f.getNombre().equalsIgnoreCase(nombreFranquicia)) {
+
+                for (Sucursal s : f.getSucursales()) {
+
+                    if (s.getProductos() == null || s.getProductos().isEmpty()) {
+                        continue;
+                    }
+
+                    Producto maxProducto = s.getProductos().get(0);
+
+                    for (Producto p : s.getProductos()) {
+                        if (p.getStock() > maxProducto.getStock()) {
+                            maxProducto = p;
+                        }
+                    }
+
+                    resultado.add(new ProductoStockDTO(
+                            s.getNombre(),
+                            maxProducto.getNombre(),
+                            maxProducto.getStock()));
+                }
+
+                return resultado;
             }
         }
 
